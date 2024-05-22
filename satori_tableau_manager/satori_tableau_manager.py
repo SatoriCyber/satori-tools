@@ -64,6 +64,9 @@ def main(event_data, context):
 	if event_mode == 'update_multiple_with_pat':
 		satori_update_multiple.govern_user_connections(event_data)
 
+	if event_mode == 'revert_multiple':
+		satori_update_multiple.revert_user_connections(event_data)
+
 	if event_mode == 'manual':
 		satori_update_single.manual_single_connection(event_data)
 

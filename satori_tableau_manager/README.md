@@ -33,7 +33,7 @@ ___
 
 ```python satori_tableau_manager.py reportdatastore -datastore_id <A_SATORI_DS_ID>```
 
-Same as the previous command, except for only one Satori Datastore (using its ID)
+Same as the previous command, except for only one Satori Datastore (using its ID).
 
 ___
 
@@ -47,6 +47,9 @@ ___
 
 **With the above reporting info, you can now update individual connections in Tableau**
 
+```python satori_tableau_manager.py update_with_pat```
+
+Update one single Tableau connection and generate one single Satori PAT.
 
 ```
 python satori_tableau_manager.py update_with_pat \
@@ -82,7 +85,52 @@ python satori_tableau_manager.py manual \
 
 ___
 
+```python satori_tableau_manager.py update_multiple_with_pat```
+
+Update many Tableau connections owned by one single Tableau user and generate one single Satori PAT.
+
+
+
+```
+python satori_tableau_manager.py update_multiple_with_pat \
+-owner <TABLEAU_OWNER_EMAIL> \
+-datastore_id <SATORI_DATASTORE_ID> \
+-satori_new_pat_name <Desired new name for your new Satori PAT>
+
+```
+
+This command will:
+
+- Verify that TABLEAU_OWNER_EMAIL exists as a valid Satori user.
+- Verify that the Satori Datastore exists using SATORI_DATASTORE_ID.
+- If yes to both
+- find all Tableau content (datasources and workbooks) owned by this email address, and if content exists
+- If any one/first piece of Tableau content has a hostname equal to Satori's Datastore "original hostname" 
+- will generate ONE single Satori Personal Access Token and then.
+- update this first _and any subsequent_ tableau content with the new Satori hostname, new Satori PAT nane, and new Satori PAT token.
+
+
+___
+
+___ 
+
+```python satori_tableau_manager.py revert_multiple``` will revert all connection for a given Tableau (email) owner combined with a single Satori Datastore ID:
+
+```
+python satori_tableau_manager.py revert_multiple \
+-owner <TABLEAU_OWNER_EMAIL> \
+-datastore_id <SATORI_DATASTORE_ID> \
+-newusername <reverted username> \
+-newpassword <reverted password> 
+```
+
+You will need to provide an original database username and password
+
+___
+
+
+
 Advanced: 
 
-You can manually edit the ```event_data``` array in ```satori_tableau_manager.py``` to make additional environment changes, such as your Tableau "base URL", API version, and search strings.
+You can manually edit the ```event_data``` array in ```satori_tableau_manager.py``` to make additional environment changes, such as your ```tableau_base_url```, ```tableau_api_version```, and ```dac_search``` strings.
 

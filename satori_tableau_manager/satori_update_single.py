@@ -9,8 +9,6 @@ def govern_single_connection(event_data):
 
 	tableau_headers = tableau_handlers.build_tableau_header(event_data['tableau_token'])
 
-	satori_api_hostname = event_data['satori_api_hostname']
-
 	#first, we need the tableau content owner email address to perform a lookup in Satori
 
 	content_url = event_data['tableau_url'] + "/datasources/" + event_data['content_id']

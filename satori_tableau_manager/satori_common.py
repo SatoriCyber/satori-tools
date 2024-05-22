@@ -61,8 +61,7 @@ def get_one_user(headers, satori_account_id, apihost, email):
 		response = requests.get(url, headers=headers)
 		response.raise_for_status()
 	except requests.exceptions.RequestException as err:
-		print("get one user ERROR OCCURRED")
-		print(response.status_code)
+		print("get one user ERROR OCCURRED: " + str(response.status_code))
 		print("EXCEPTION: ", type(err))
 	else:
 		return response.json()
@@ -93,6 +92,7 @@ def get_one_datastore(headers, apihost, datastore_id):
 		response = requests.get(url, headers=headers)
 		response.raise_for_status()
 	except requests.exceptions.RequestException as err:
+		print("get one datastore ERROR OCCURRED: " + str(response.status_code))
 		print("EXCEPTION: ", type(err))
 	else:
 		return response.json()
