@@ -3,7 +3,7 @@ import json
 import csv
 
 import satori_common
-import tableau_handlers
+import tableau_common
 
 def analyze_datastore_connections(event_data, filename):
 
@@ -19,7 +19,7 @@ def analyze_datastore_connections(event_data, filename):
 		satori_headers, 
 		event_data)
 
-	headers = tableau_handlers.build_tableau_header(event_data['tableau_token'])
+	tableau_headers = tableau_common.build_tableau_header(event_data['tableau_token'])
 
 
 	with open(filename, 'w', newline='\n') as file:			
@@ -51,19 +51,26 @@ def analyze_datastore_connections(event_data, filename):
 		print('FINDING TABLEAU DATASOURCE CONNECTIONS FOR SATORI DATASTORE: \"' + satori_datastore['name'] + '\"')
 
 		project = ''
-		tableau_datasources = tableau_handlers.get_all_tableau_datasources(headers, event_data)
+		tableau_datasources = tableau_common.get_all_tableau_datasources(tableau_headers, event_data)
 
 		if len(tableau_datasources) > 0:
 
 			for datasource in tableau_datasources:
 
 				datasource_name = datasource['name']
-				datasource_owner = datasource['owner']['name']
+
+				if event_data['tableau_api_version'] == '3.14':
+					url = event_data['tableau_url'] + "/users/" + datasource['owner']['id']
+					datasource_owner = tableau_common.get_one_user(
+						url, tableau_headers, event_data)['user']['email']
+				else:
+					datasource_owner = datasource['owner']['name']
+
 				datasource_id = datasource['id']
 				datasource_project_name = datasource['project']['name']
 
 				url = event_data['tableau_url'] + "/datasources/" + datasource_id + "/connections"
-				datasource_connections = tableau_handlers.get_content(url, headers)
+				datasource_connections = tableau_common.get_content(url, tableau_headers, event_data)
 
 				for connection in datasource_connections['connections']['connection']:
 
@@ -117,7 +124,7 @@ def analyze_datastore_connections(event_data, filename):
 		print("_____________________________________________________________")
 		print('FINDING TABLEAU WORKBOOK CONNECTIONS FOR SATORI DATASTORE: \"' + satori_datastore['name'] + '\"')
 
-		tableau_workbooks = tableau_handlers.get_all_tableau_workbooks(headers, event_data)
+		tableau_workbooks = tableau_common.get_all_tableau_workbooks(tableau_headers, event_data)
 
 		if len(tableau_workbooks) > 0:
 
@@ -130,7 +137,7 @@ def analyze_datastore_connections(event_data, filename):
 				workbook_url = workbook['webpageUrl']
 
 				url = event_data['tableau_url'] + "/workbooks/" + workbook_id + "/connections"
-				workbook_connections = tableau_handlers.get_content(url, headers)
+				workbook_connections = tableau_common.get_content(url, tableau_headers, event_data)
 
 				for connection in workbook_connections['connections']['connection']:
 					
@@ -184,4 +191,4 @@ def analyze_datastore_connections(event_data, filename):
 							'WorkbookURL': workbook_url
 							})
 
-		print("\n\nCSV File has been generated")
+		print('\n\n' + event_data['filename'] + ' file has been generated')

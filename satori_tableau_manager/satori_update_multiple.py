@@ -3,11 +3,11 @@ import json
 import csv
 
 import satori_common
-import tableau_handlers
+import tableau_common
 
 def govern_user_connections(event_data):
 
-	tableau_headers = tableau_handlers.build_tableau_header(event_data['tableau_token'])
+	tableau_headers = tableau_common.build_tableau_header(event_data['tableau_token'])
 	satori_headers = satori_common.satori_build_header(event_data['satori_token'])
 
 	#first, verify the content owner and Satori Datastore both exist in Satori
@@ -15,7 +15,8 @@ def govern_user_connections(event_data):
 			satori_headers, 
 			event_data['satori_account_id'],
 			event_data['satori_api_hostname'],
-			event_data['owner'])
+			event_data['owner'],
+			event_data)
 
 	satori_datastore = satori_common.get_one_datastore(
 		satori_headers, 
@@ -37,8 +38,8 @@ def govern_user_connections(event_data):
 		print("\n\nfound this satori user: " + str(satori_user) + '\n\nNow finding any Tableau content for this user')
 		satori_user_id = satori_user['id']
 
-		tableau_datasources = tableau_handlers.get_all_tableau_datasources(tableau_headers, event_data)
-		tableau_workbooks = tableau_handlers.get_all_tableau_workbooks(tableau_headers, event_data)
+		tableau_datasources = tableau_common.get_all_tableau_datasources(tableau_headers, event_data)
+		tableau_workbooks = tableau_common.get_all_tableau_workbooks(tableau_headers, event_data)
 
 		if (len(tableau_datasources) == 0) and (len(tableau_workbooks) == 0):
 			print("no content found for this user, aborting without generating a Satori PAT")
@@ -49,12 +50,21 @@ def govern_user_connections(event_data):
 				for datasource in tableau_datasources:
 
 					datasource_name = datasource['name']
-					datasource_owner = datasource['owner']['name']
+
+
+					if event_data['tableau_api_version'] == '3.14':
+						url = event_data['tableau_url'] + "/users/" + datasource['owner']['id']
+						datasource_owner = tableau_common.get_one_user(
+							url, tableau_headers, event_data)['user']['email']
+					else:
+						datasource_owner = datasource['owner']['name']
+
+
 					datasource_id = datasource['id']
 					datasource_project_name = datasource['project']['name']
 
 					url = event_data['tableau_url'] + "/datasources/" + datasource_id + "/connections"
-					datasource_connections = tableau_handlers.get_content(url, tableau_headers)
+					datasource_connections = tableau_common.get_content(url, tableau_headers, event_data)
 
 					for connection in datasource_connections['connections']['connection']:
 
@@ -75,10 +85,12 @@ def govern_user_connections(event_data):
 							if len(satori_pat) == 0:
 								#generate a PAT in Satori for the user email
 								satori_pat_temp = satori_common.generate_satori_pat(
-								satori_headers, 
-								event_data['satori_api_hostname'], 
-								satori_user_id,
-								event_data['satori_new_pat_name'])
+									satori_headers, 
+									event_data['satori_api_hostname'], 
+									satori_user_id,
+									event_data['satori_new_pat_name'],
+									event_data)
+								
 								if satori_pat_temp[1] in (400, 409):
 									print("Duplicate Pat Found or PAT Format invalid")
 								else:
@@ -90,7 +102,7 @@ def govern_user_connections(event_data):
 								connection_url = event_data['tableau_url'] + "/datasources/" + datasource_id + "/connections/" + connection_id
 
 
-								updated_content = tableau_handlers.update_one_connection(
+								updated_content = tableau_common.update_one_connection(
 									connection_url, 
 									tableau_headers, 
 									satori_datastore['satoriHostname'], 		
@@ -103,7 +115,7 @@ def govern_user_connections(event_data):
 
 
 
-			tableau_workbooks = tableau_handlers.get_all_tableau_workbooks(tableau_headers, event_data)
+			tableau_workbooks = tableau_common.get_all_tableau_workbooks(tableau_headers, event_data)
 
 			if len(tableau_workbooks) > 0:
 
@@ -116,7 +128,7 @@ def govern_user_connections(event_data):
 					workbook_url = workbook['webpageUrl']
 
 					url = event_data['tableau_url'] + "/workbooks/" + workbook_id + "/connections"
-					workbook_connections = tableau_handlers.get_content(url, tableau_headers)
+					workbook_connections = tableau_common.get_content(url, tableau_headers, event_data)
 
 					for connection in workbook_connections['connections']['connection']:
 						
@@ -141,10 +153,12 @@ def govern_user_connections(event_data):
 							if len(satori_pat) == 0:
 								#generate a PAT in Satori for the user email
 								satori_pat_temp = satori_common.generate_satori_pat(
-								satori_headers, 
-								event_data['satori_api_hostname'], 
-								satori_user_id,
-								event_data['satori_new_pat_name'])
+									satori_headers, 
+									event_data['satori_api_hostname'], 
+									satori_user_id,
+									event_data['satori_new_pat_name'],
+									event_data)
+								
 								if satori_pat_temp[1] in (400, 409):
 									print("Duplicate Pat Found or PAT Format invalid")
 								else:
@@ -155,12 +169,13 @@ def govern_user_connections(event_data):
 								print("reusing existing PAT: " + satori_pat['tokenName'])
 								connection_url = event_data['tableau_url'] + "/workbooks/" + workbook_id + "/connections/" + connection_id
 
-								updated_content = tableau_handlers.update_one_connection(
+								updated_content = tableau_common.update_one_connection(
 									connection_url, 
 									tableau_headers, 
 									satori_datastore['satoriHostname'], 		
 									satori_pat['tokenName'],
-									satori_pat['token'])
+									satori_pat['token'],
+									event_data)
 
 								print('\nconnection updated with this response: \n')
 								print(updated_content)
@@ -169,7 +184,7 @@ def govern_user_connections(event_data):
 
 def revert_user_connections(event_data):
 
-	tableau_headers = tableau_handlers.build_tableau_header(event_data['tableau_token'])
+	tableau_headers = tableau_common.build_tableau_header(event_data['tableau_token'])
 	satori_headers = satori_common.satori_build_header(event_data['satori_token'])
 
 	#first, verify the content owner and Satori Datastore both exist in Satori
@@ -177,7 +192,8 @@ def revert_user_connections(event_data):
 			satori_headers, 
 			event_data['satori_account_id'],
 			event_data['satori_api_hostname'],
-			event_data['owner'])
+			event_data['owner'],
+			event_data)
 
 	satori_datastore = satori_common.get_one_datastore(
 		satori_headers, 
@@ -194,8 +210,8 @@ def revert_user_connections(event_data):
 		print("\n\nfound this satori user: " + str(satori_user) + '\n\nNow finding any Tableau content for this user')
 		satori_user_id = satori_user['id']
 
-		tableau_datasources = tableau_handlers.get_all_tableau_datasources(tableau_headers, event_data)
-		tableau_workbooks = tableau_handlers.get_all_tableau_workbooks(tableau_headers, event_data)
+		tableau_datasources = tableau_common.get_all_tableau_datasources(tableau_headers, event_data)
+		tableau_workbooks = tableau_common.get_all_tableau_workbooks(tableau_headers, event_data)
 
 		if (len(tableau_datasources) == 0) and (len(tableau_workbooks) == 0):
 			print("no content found for this user, aborting without generating a Satori PAT")
@@ -206,12 +222,19 @@ def revert_user_connections(event_data):
 				for datasource in tableau_datasources:
 
 					datasource_name = datasource['name']
-					datasource_owner = datasource['owner']['name']
+
+					if event_data['tableau_api_version'] == '3.14':
+						url = event_data['tableau_url'] + "/users/" + datasource['owner']['id']
+						datasource_owner = tableau_common.get_one_user(
+							url, tableau_headers, event_data)['user']['email']
+					else:
+						datasource_owner = datasource['owner']['name']
+
 					datasource_id = datasource['id']
 					datasource_project_name = datasource['project']['name']
 
 					url = event_data['tableau_url'] + "/datasources/" + datasource_id + "/connections"
-					datasource_connections = tableau_handlers.get_content(url, tableau_headers)
+					datasource_connections = tableau_common.get_content(url, tableau_headers, event_data)
 
 					for connection in datasource_connections['connections']['connection']:
 
@@ -232,18 +255,19 @@ def revert_user_connections(event_data):
 							connection_url = event_data['tableau_url'] + "/datasources/" + datasource_id + "/connections/" + connection_id
 
 
-							updated_content = tableau_handlers.update_one_connection(
+							updated_content = tableau_common.update_one_connection(
 								connection_url, 
 								tableau_headers, 
 								satori_datastore['hostname'], 		
 								event_data['newusername'],
-								event_data['newpassword'])
+								event_data['newpassword'],
+								event_data)
 
 							print('\nconnection reverted with this response: \n')
 							print(updated_content)
 
 
-			tableau_workbooks = tableau_handlers.get_all_tableau_workbooks(tableau_headers, event_data)
+			tableau_workbooks = tableau_common.get_all_tableau_workbooks(tableau_headers, event_data)
 
 			if len(tableau_workbooks) > 0:
 
@@ -256,7 +280,7 @@ def revert_user_connections(event_data):
 					workbook_url = workbook['webpageUrl']
 
 					url = event_data['tableau_url'] + "/workbooks/" + workbook_id + "/connections"
-					workbook_connections = tableau_handlers.get_content(url, tableau_headers)
+					workbook_connections = tableau_common.get_content(url, tableau_headers, event_data)
 
 					for connection in workbook_connections['connections']['connection']:
 						
@@ -281,12 +305,13 @@ def revert_user_connections(event_data):
 						
 							connection_url = event_data['tableau_url'] + "/workbooks/" + workbook_id + "/connections/" + connection_id
 
-							updated_content = tableau_handlers.update_one_connection(
+							updated_content = tableau_common.update_one_connection(
 								connection_url, 
 								tableau_headers, 
 								satori_datastore['hostname'], 		
 								event_data['newusername'],
-								event_data['newpassword'])
+								event_data['newpassword'],
+								event_data)
 
 							print('\nconnection reverted with this response: \n')
 							print(updated_content)
