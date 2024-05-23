@@ -1,8 +1,7 @@
 import requests
 import json
-import boto3
-from botocore.exceptions import ClientError
 
+requests.packages.urllib3.disable_warnings() 
 
 def satori_auth(event_data):
 	auth_headers = {'content-type': 'application/json','accept': 'application/json'}
@@ -13,7 +12,7 @@ def satori_auth(event_data):
 		"serviceAccountKey": event_data['satori_sa_key']
 	})
 	try:
-		r = requests.post(auth_url, headers=auth_headers, data=auth_body)
+		r = requests.post(auth_url, headers=auth_headers, data=auth_body, verify=event_data['verify_ssl'])
 		response = r.json()
 		satori_token = response["token"]
 	except Exception as err:
@@ -39,14 +38,14 @@ def get_all_users(headers, event_data):
 	print("getting all satori users: " + url)
 
 	try:
-		response = requests.get(url, headers=headers)
+		response = requests.get(url, headers=headers, verify=event_data['verify_ssl'])
 		response.raise_for_status()
 	except requests.exceptions.RequestException as err:
 		print("EXCEPTION: ", type(err))
 	else:
 		return response.json()['records']
 
-def get_one_user(headers, satori_account_id, apihost, email):
+def get_one_user(headers, satori_account_id, apihost, email, event_data):
 
 
 	email = email.replace('+','%2B')
@@ -58,10 +57,11 @@ def get_one_user(headers, satori_account_id, apihost, email):
 	print("\n\ngetting satori user: " + url)
 
 	try:
-		response = requests.get(url, headers=headers)
+		response = requests.get(url, headers=headers, verify=event_data['verify_ssl'])
 		response.raise_for_status()
 	except requests.exceptions.RequestException as err:
-		print("get one user ERROR OCCURRED: " + str(response.status_code))
+		print("get one user ERROR OCCURRED")
+		print(response.status_code)
 		print("EXCEPTION: ", type(err))
 	else:
 		return response.json()
@@ -75,7 +75,7 @@ def get_all_datastores(headers, event_data):
 	print("getting all satori datastores: " + url)
 
 	try:
-		response = requests.get(url, headers=headers)
+		response = requests.get(url, headers=headers, verify=event_data['verify_ssl'])
 		response.raise_for_status()
 	except requests.exceptions.RequestException as err:
 		print("EXCEPTION: ", type(err))
@@ -89,16 +89,15 @@ def get_one_datastore(headers, apihost, datastore_id):
 	print("\n\ngetting one satori datastore: " + url)
 
 	try:
-		response = requests.get(url, headers=headers)
+		response = requests.get(url, headers=headers, verify=False)
 		response.raise_for_status()
 	except requests.exceptions.RequestException as err:
-		print("get one datastore ERROR OCCURRED: " + str(response.status_code))
 		print("EXCEPTION: ", type(err))
 	else:
 		return response.json()
 
 
-def generate_satori_pat(headers, apihost, user_id, satori_pat_name):
+def generate_satori_pat(headers, apihost, user_id, satori_pat_name, event_data):
 
 	url = "https://{}/api/users/{}/personal-access-tokens".format(apihost, user_id)
 
@@ -108,7 +107,7 @@ def generate_satori_pat(headers, apihost, user_id, satori_pat_name):
 			})
 
 	try:
-		response = requests.post(url, headers=headers, data=payload)
+		response = requests.post(url, headers=headers, data=payload, verify=event_data['verify_ssl'])
 		response.raise_for_status()
 	except requests.exceptions.RequestException as err:
 		print("generate Satori PAT ERROR OCCURRED")

@@ -10,7 +10,7 @@ import satori_report_byowner
 import satori_update_single
 import satori_update_multiple
 import satori_common
-import tableau_handlers
+import tableau_common
 
 def main(event_data, context):      
 
@@ -23,7 +23,7 @@ def main(event_data, context):
 	event_data['tableau_pat_secret'] = os.getenv('tableau_pat_secret')
 	
 	# get a tableau session token or else fail
-	tableau_auth = tableau_handlers.get_tableau_token(event_data)
+	tableau_auth = tableau_common.get_tableau_token(event_data)
 	event_data['tableau_token'] = tableau_auth[0]
 	event_data['site_id'] = tableau_auth[1]
 
@@ -44,19 +44,22 @@ def main(event_data, context):
 
 	#what operation are we performing?
 	if event_mode == 'reportall':
+		event_data['filename'] = "SatoriGovernanceReport.csv"
 		satori_report_all.analyze_connections(
 			event_data=event_data,
-			filename="SatoriGovernanceReport.csv")
+			filename=event_data['filename'])
 		
 	if event_mode == 'reportdatastore':
+		event_data['filename'] = "SatoriGovernanceReport-" + event_data['datastore_id']  + ".csv"
 		satori_report_bydatastore.analyze_datastore_connections(
 			event_data=event_data, 
-			filename="SatoriGovernanceReport-" + event_data['datastore_id']  + ".csv")
+			filename=event_data['filename'])
 
 	if event_mode == 'reportowner':
+		event_data['filename'] = "SatoriGovernanceReport-" + event_data['owner']  + ".csv"
 		satori_report_byowner.analyze_owner_connections(
 			event_data=event_data, 
-			filename="SatoriGovernanceReport-" + event_data['owner']  + ".csv",)
+			filename=event_data['filename'])
 
 	if event_mode == 'update_with_pat':
 		satori_update_single.govern_single_connection(event_data)
@@ -121,7 +124,8 @@ if __name__ == "__main__":
 		"newusername": args.newusername if args.newusername else '',
 		"newpassword": args.newpassword if args.newpassword else '',
 		"tableau_base_url": "prod-useast-a.online.tableau.com",
-		"tableau_api_version": "3.22",
+		"tableau_api_version": "3.14",
+		"verify_ssl": True,
 		"tableau_page_size": "1000",
 		"satori_api_hostname": "app.satoricyber.com",
 		#for governance reporting, you can hand in an array of search fragments, e.g. 'satoricyber.net'
