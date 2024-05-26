@@ -19,8 +19,8 @@ def get_tableau_token(event_data):
 	url = "https://" + event_data['tableau_base_url'] + "/api/" + event_data['tableau_api_version'] + "/auth/signin"
 	payload = json.dumps({
 			"credentials": {
-				"personalAccessTokenName": event_data['tableau_pat_name'],
-				"personalAccessTokenSecret": event_data['tableau_pat_secret'],
+				"personalAccessTokenName": event_data['tableau_patname'],
+				"personalAccessTokenSecret": event_data['tableau_patsecret'],
 				"site": {
 					"contentUrl": ""
 					}
@@ -31,12 +31,52 @@ def get_tableau_token(event_data):
 	tableau_token = response.json()['credentials']['token']
 	return tableau_token, site_id
 
+def get_all_tableau_content(headers, event_data):
+
+	tableau_pageSize = event_data['tableau_page_size']
+
+	if (event_data['owner_urlencoded'] != '') and (event_data['owner'] != ''):
+		tableau_filter = '&filter=ownerEmail:eq:' + event_data['owner_urlencoded']
+	else:
+		tableau_filter = ''
+
+	# WE NEED TO PAGINATE OUR API CALLS IN CASE THERE ARE MORE THAN ONE THOUSAND ITEMS
+	tableau_content_page_number = 1  # 1-based, not zero based
+	tableau_content_total_returned = 0
+	tableau_content_done = False
+	tableau_content = []
+	while not(tableau_content_done):
+		paging_parameters = 'pageSize={}&pageNumber={page_number}'.format(
+			event_data['tableau_page_size'], 
+			page_number=tableau_content_page_number)
+		if event_data['content_searchtype'] == 'datasources':
+			url = event_data['tableau_url'] + "/datasources?" + paging_parameters + tableau_filter
+		if event_data['content_searchtype'] == 'workbooks':
+			url = event_data['tableau_url'] + "/workbooks?" + paging_parameters + tableau_filter
+
+		tableau_content_page = get_content(url, headers, event_data)
+		if event_data['content_searchtype'] == 'datasources':
+			paging = 'datasource'
+		if event_data['content_searchtype'] == 'workbooks':
+			paging = 'workbook'
+
+		for item in tableau_content_page[event_data['content_searchtype']][paging]:
+			tableau_content.append(item)
+		total_available = int(tableau_content_page['pagination']['totalAvailable'])
+		tableau_content_page_number += 1
+		tableau_content_total_returned += int(tableau_pageSize)
+		if(tableau_content_total_returned >= total_available):
+			tableau_content_done = True
+
+	return tableau_content
+
+
 def get_all_tableau_datasources(headers, event_data):
 
 	tableau_pageSize = event_data['tableau_page_size']
 
-	if (event_data['owner_url_encoded'] != '') and (event_data['owner'] != ''):
-		tableau_filter = '&filter=ownerEmail:eq:' + event_data['owner_url_encoded']
+	if (event_data['owner_urlencoded'] != '') and (event_data['owner'] != ''):
+		tableau_filter = '&filter=ownerEmail:eq:' + event_data['owner_urlencoded']
 	else:
 		tableau_filter = ''
 
@@ -68,8 +108,8 @@ def get_all_tableau_workbooks(headers, event_data):
 
 	tableau_pageSize = event_data['tableau_page_size']
 
-	if (event_data['owner_url_encoded'] != '') and (event_data['owner'] != ''):
-		tableau_filter = '&filter=ownerEmail:eq:' + event_data['owner_url_encoded']
+	if (event_data['owner_urlencoded'] != '') and (event_data['owner'] != ''):
+		tableau_filter = '&filter=ownerEmail:eq:' + event_data['owner_urlencoded']
 	else:
 		tableau_filter = ''
 

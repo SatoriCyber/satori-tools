@@ -4,9 +4,7 @@ import json
 import argparse
 import os
 
-import satori_report_all
-import satori_report_bydatastore
-import satori_report_byowner
+import satori_report
 import satori_update_single
 import satori_update_multiple
 import satori_common
@@ -16,11 +14,12 @@ def main(event_data, context):
 
 	event_mode = event_data['mode']
 
+	# env must be set or else fail
 	event_data['satori_account_id'] = os.getenv('satori_account_id')
 	event_data['satori_sa_id'] = os.getenv('satori_sa_id')
 	event_data['satori_sa_key'] = os.getenv('satori_sa_key')
-	event_data['tableau_pat_name'] = os.getenv('tableau_pat_name')
-	event_data['tableau_pat_secret'] = os.getenv('tableau_pat_secret')
+	event_data['tableau_patname'] = os.getenv('tableau_patname')
+	event_data['tableau_patsecret'] = os.getenv('tableau_patsecret')
 	
 	# get a tableau session token or else fail
 	tableau_auth = tableau_common.get_tableau_token(event_data)
@@ -31,35 +30,27 @@ def main(event_data, context):
 	satori_auth = satori_common.satori_auth(event_data)
 	event_data['satori_token'] = satori_auth
 
-
 	#generate the base tableau URL for all other tableau URLs
 	event_data['tableau_url'] = "https://{}/api/{}/sites/{}".format(
 		event_data['tableau_base_url'],
 		event_data['tableau_api_version'],
 		event_data['site_id'])
 
-	#if searching for an email/owner, url encode the email because of plus signs :) 
-	event_data['owner_url_encoded'] = event_data['owner'].replace('+','%2b')
-
+	#if searching for an email/owner, url encode the email because of plus signs 
+	event_data['owner_urlencoded'] = event_data['owner'].replace('+','%2b')
 
 	#what operation are we performing?
 	if event_mode == 'reportall':
 		event_data['filename'] = "SatoriGovernanceReport.csv"
-		satori_report_all.analyze_connections(
-			event_data=event_data,
-			filename=event_data['filename'])
+		satori_report.analyze_connections(event_data)
 		
 	if event_mode == 'reportdatastore':
 		event_data['filename'] = "SatoriGovernanceReport-" + event_data['datastore_id']  + ".csv"
-		satori_report_bydatastore.analyze_datastore_connections(
-			event_data=event_data, 
-			filename=event_data['filename'])
+		satori_report.analyze_connections(event_data)
 
 	if event_mode == 'reportowner':
 		event_data['filename'] = "SatoriGovernanceReport-" + event_data['owner']  + ".csv"
-		satori_report_byowner.analyze_owner_connections(
-			event_data=event_data, 
-			filename=event_data['filename'])
+		satori_report.analyze_connections(event_data)
 
 	if event_mode == 'update_with_pat':
 		satori_update_single.govern_single_connection(event_data)
@@ -92,7 +83,7 @@ if __name__ == "__main__":
 	parser.add_argument('-datastore_id', type=str, nargs='?', default='',
 					help='The ID of the Satori Datastore')
 
-	parser.add_argument('-satori_new_pat_name', type=str, nargs='?', default='',
+	parser.add_argument('-satori_newpatname', type=str, nargs='?', default='',
 					help='The desired new name for a new Satori Personal Access Token')
 
 	parser.add_argument('-owner', type=str, nargs='?', default='',
@@ -117,7 +108,7 @@ if __name__ == "__main__":
 		"content_id": args.content_id if args.content_id else '',
 		"connection_id": args.connection_id if args.connection_id else '',
 		"datastore_id": args.datastore_id if args.datastore_id else '',
-		"satori_new_pat_name": args.satori_new_pat_name if args.satori_new_pat_name else '',
+		"satori_newpatname": args.satori_newpatname if args.satori_newpatname else '',
 		"owner": args.owner if args.owner else '',
 		"oldhostname": args.oldhostname if args.oldhostname else '',
 		"newhostname": args.newhostname if args.newhostname else '',
@@ -125,7 +116,7 @@ if __name__ == "__main__":
 		"newpassword": args.newpassword if args.newpassword else '',
 		"tableau_base_url": "prod-useast-a.online.tableau.com",
 		"tableau_api_version": "3.14",
-		"verify_ssl": True,
+		"verify_ssl": False,
 		"tableau_page_size": "1000",
 		"satori_api_hostname": "app.satoricyber.com",
 		#for governance reporting, you can hand in an array of search fragments, e.g. 'satoricyber.net'
