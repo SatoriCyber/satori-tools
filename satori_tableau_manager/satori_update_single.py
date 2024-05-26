@@ -59,7 +59,7 @@ def govern_single_connection(event_data):
 			satori_headers, 
 			event_data['satori_api_hostname'], 
 			satori_user_id,
-			event_data['satori_new_pat_name'],
+			event_data['satori_newpatname'],
 			event_data)
 
 		if newpat_result[1] in (400, 409):

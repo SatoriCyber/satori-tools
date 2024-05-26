@@ -18,8 +18,8 @@ Tableau PAT info comes from Tableau admin area, Satori SA info comes from Satori
 export satori_account_id=<satori_account_id>
 export satori_sa_id=<satori_sa_id>
 export satori_sa_key=<satori_sa_key>
-export tableau_pat_name="Tableau Access Token Name"
-export tableau_pat_secret=<Tableau Access Token Secret>
+export tableau_patname="Tableau Access Token Name"
+export tableau_patsecret=<Tableau Access Token Secret>
 ```
 
 Also note: there is a python array ```event_data``` in satori_tableau_manager.py with some additional config settings. You should review this array for more information.
@@ -56,7 +56,7 @@ python satori_tableau_manager.py update_with_pat \
 -content_id <TABLEAU_CONTENT_ID> \
 -connection_id <TABLEAU_CONNECTION_ID> \
 -datastore_id <SATORI_DATASTORE> \
--satori_new_pat_name <Desired new name for your new Satori PAT>
+-satori_newpatname <Desired new name for your new Satori PAT>
 
 ```
 
@@ -89,7 +89,7 @@ ___
 python satori_tableau_manager.py update_multiple_with_pat \
 -owner <TABLEAU_EMAIL_OWNER> \
 -datastore_id <SATORI_DATASTORE_ID> \
--satori_new_pat_name <DESIRED_NEW_PAT_NAME>
+-satori_newpatname <DESIRED_NEW_PAT_NAME>
 ```
 
 For a given Tableau Owner Email, combined with a given Satori Datastore ID, update all connections owned by this email address.

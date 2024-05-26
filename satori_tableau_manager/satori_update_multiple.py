@@ -51,7 +51,6 @@ def govern_user_connections(event_data):
 
 					datasource_name = datasource['name']
 
-
 					if event_data['tableau_api_version'] == '3.14':
 						url = event_data['tableau_url'] + "/users/" + datasource['owner']['id']
 						datasource_owner = tableau_common.get_one_user(
@@ -63,8 +62,8 @@ def govern_user_connections(event_data):
 					datasource_id = datasource['id']
 					datasource_project_name = datasource['project']['name']
 
-					url = event_data['tableau_url'] + "/datasources/" + datasource_id + "/connections"
-					datasource_connections = tableau_common.get_content(url, tableau_headers, event_data)
+					datasource_url = event_data['tableau_url'] + "/datasources/" + datasource_id + "/connections"
+					datasource_connections = tableau_common.get_content(datasource_url, tableau_headers, event_data)
 
 					for connection in datasource_connections['connections']['connection']:
 
@@ -77,10 +76,11 @@ def govern_user_connections(event_data):
 						print('datasource ID: ' + datasource_id)
 						print('connection ID: ' + connection_id)
 						print('hostname: ' + connection_serverAddress)
-						print('')
 
 						if (connection_serverAddress == satori_datastore['hostname']):
 							print('FOUND A HOSTNAME TO UPDATE')
+
+							connection_url = event_data['tableau_url'] + "/datasources/" + datasource_id + "/connections/" + connection_id
 
 							if len(satori_pat) == 0:
 								#generate a PAT in Satori for the user email
@@ -88,7 +88,7 @@ def govern_user_connections(event_data):
 									satori_headers, 
 									event_data['satori_api_hostname'], 
 									satori_user_id,
-									event_data['satori_new_pat_name'],
+									event_data['satori_newpatname'],
 									event_data)
 								
 								if satori_pat_temp[1] in (400, 409):
@@ -97,17 +97,26 @@ def govern_user_connections(event_data):
 									print("\nreceived a new satori PAT: " + str(satori_pat_temp[0]))
 									satori_pat = satori_pat_temp[0]
 
+									updated_content = tableau_common.update_one_connection(
+										connection_url, 
+										tableau_headers, 
+										satori_datastore['satoriHostname'], 		
+										satori_pat['tokenName'],
+										satori_pat['token'],
+										event_data)
+
+									print('\nconnection updated with this response: \n')
+									print(updated_content)
+
 							else:
 								print("reusing existing PAT: " + satori_pat['tokenName'])
-								connection_url = event_data['tableau_url'] + "/datasources/" + datasource_id + "/connections/" + connection_id
-
-
 								updated_content = tableau_common.update_one_connection(
 									connection_url, 
 									tableau_headers, 
 									satori_datastore['satoriHostname'], 		
 									satori_pat['tokenName'],
-									satori_pat['token'])
+									satori_pat['token'],
+									event_data)
 
 								print('\nconnection updated with this response: \n')
 								print(updated_content)
@@ -115,7 +124,7 @@ def govern_user_connections(event_data):
 
 
 
-			tableau_workbooks = tableau_common.get_all_tableau_workbooks(tableau_headers, event_data)
+			#tableau_workbooks = tableau_common.get_all_tableau_workbooks(tableau_headers, event_data)
 
 			if len(tableau_workbooks) > 0:
 
@@ -127,8 +136,8 @@ def govern_user_connections(event_data):
 					workbook_project_name = workbook['project']['name']
 					workbook_url = workbook['webpageUrl']
 
-					url = event_data['tableau_url'] + "/workbooks/" + workbook_id + "/connections"
-					workbook_connections = tableau_common.get_content(url, tableau_headers, event_data)
+					workbook_url = event_data['tableau_url'] + "/workbooks/" + workbook_id + "/connections"
+					workbook_connections = tableau_common.get_content(workbook_url, tableau_headers, event_data)
 
 					for connection in workbook_connections['connections']['connection']:
 						
@@ -144,8 +153,6 @@ def govern_user_connections(event_data):
 						print('datasource ID: ' + connection_datasource_id)
 						print('connection ID: ' + connection_id)
 						print('hostname: ' + connection_serverAddress)
-						print('')
-
 			
 						if (connection_serverAddress == satori_datastore['hostname']):
 							print('FOUND A HOSTNAME TO UPDATE')
@@ -156,7 +163,7 @@ def govern_user_connections(event_data):
 									satori_headers, 
 									event_data['satori_api_hostname'], 
 									satori_user_id,
-									event_data['satori_new_pat_name'],
+									event_data['satori_newpatname'],
 									event_data)
 								
 								if satori_pat_temp[1] in (400, 409):
