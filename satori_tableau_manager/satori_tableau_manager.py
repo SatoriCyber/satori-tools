@@ -10,6 +10,23 @@ import satori_update_multiple
 import satori_common
 import tableau_common
 
+
+#event_data moves around all of this utility with all the necessary info to perform 
+#the various functions e.g. report, update single, update multiple, etc
+#change all of these vars to match your Satori and Tableau environments:
+
+event_data = {
+		"tableau_base_url": "prod-useast-a.online.tableau.com",
+		"tableau_api_version": "3.14",
+		"verify_ssl": False,
+		"tableau_page_size": "1000",
+		"satori_api_hostname": "app.satoricyber.com",
+		#for governance reporting, you can hand in an array of search fragments, e.g. 'satoricyber.net'
+		"dac_search": ["satoricyber.net", "us-east1.someotherhost.com", "thirdhost.somewhere.com"]
+	}
+
+
+#we define a main as well as a "__main__" for future AWS Lambda integration work
 def main(event_data, context):      
 
 	event_mode = event_data['mode']
@@ -27,8 +44,7 @@ def main(event_data, context):
 	event_data['site_id'] = tableau_auth[1]
 
 	# get a satori session token or else fail	
-	satori_auth = satori_common.satori_auth(event_data)
-	event_data['satori_token'] = satori_auth
+	event_data['satori_token'] = satori_common.satori_auth(event_data)
 
 	#generate the base tableau URL for all other tableau URLs
 	event_data['tableau_url'] = "https://{}/api/{}/sites/{}".format(
@@ -68,61 +84,43 @@ def main(event_data, context):
 if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
-	
 	parser.add_argument('-v', '--verbose', action='store_true')
 
 	parser.add_argument('command', type=str, nargs='?', default='report',
 					help='The type of command to run, choices are list, govern and ungovern')
-
 	parser.add_argument('-content_id', type=str, nargs='?', default='',
 					help='The ID of the Tableau content')
-
 	parser.add_argument('-connection_id', type=str, nargs='?', default='',
 					help='The ID of the Tableau connection')
-
 	parser.add_argument('-datastore_id', type=str, nargs='?', default='',
 					help='The ID of the Satori Datastore')
-
 	parser.add_argument('-satori_newpatname', type=str, nargs='?', default='',
 					help='The desired new name for a new Satori Personal Access Token')
-
 	parser.add_argument('-owner', type=str, nargs='?', default='',
-					help='The ID of the Satori Datastore')
-
+					help='The owner email for the tableau content')
 	parser.add_argument('-oldhostname', type=str, nargs='?', default='',
 					help='The old hostname to replace')
-
 	parser.add_argument('-newhostname', type=str, nargs='?', default='',
 					help='The new hostname for the connection')
-
 	parser.add_argument('-newusername', type=str, nargs='?', default='',
 					help='The new username for the connection to update')
-
 	parser.add_argument('-newpassword', type=str, nargs='?', default='',
 					help='The new password for the connection to update')
 
 	args = parser.parse_args()
 
-	event_data = {
-		"mode": args.command if args.command else '',
-		"content_id": args.content_id if args.content_id else '',
-		"connection_id": args.connection_id if args.connection_id else '',
-		"datastore_id": args.datastore_id if args.datastore_id else '',
-		"satori_newpatname": args.satori_newpatname if args.satori_newpatname else '',
-		"owner": args.owner if args.owner else '',
-		"oldhostname": args.oldhostname if args.oldhostname else '',
-		"newhostname": args.newhostname if args.newhostname else '',
-		"newusername": args.newusername if args.newusername else '',
-		"newpassword": args.newpassword if args.newpassword else '',
-		"tableau_base_url": "prod-useast-a.online.tableau.com",
-		"tableau_api_version": "3.14",
-		"verify_ssl": False,
-		"tableau_page_size": "1000",
-		"satori_api_hostname": "app.satoricyber.com",
-		#for governance reporting, you can hand in an array of search fragments, e.g. 'satoricyber.net'
-		"dac_search": ["satoricyber.net", "us-east1.someotherhost.com", "thirdhost.somewhere.com"]
-	}
+	event_data['mode'] 				= args.command if args.command else 'reportall'
+	event_data['content_id'] 		= args.content_id if args.content_id else ''
+	event_data['connection_id'] 	= args.connection_id if args.connection_id else ''
+	event_data['datastore_id'] 		= args.datastore_id if args.datastore_id else ''
+	event_data['satori_newpatname'] = args.satori_newpatname if args.satori_newpatname else ''
+	event_data['owner'] 			= args.owner if args.owner else ''
+	event_data['oldhostname'] 		= args.oldhostname if args.oldhostname else ''
+	event_data['newhostname'] 		= args.newhostname if args.newhostname else ''
+	event_data['newusername'] 		= args.newusername if args.newusername else ''
+	event_data['newpassword'] 		= args.newpassword if args.newpassword else ''
 
 	main(
-	event_data, 
-	context="might come in from aws events, or, from this very method at a local console")
+		event_data, 
+		context="comes from aws event or from local console"
+		)
