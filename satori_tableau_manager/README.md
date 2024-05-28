@@ -22,7 +22,23 @@ export tableau_patname="Tableau Access Token Name"
 export tableau_patsecret=<Tableau Access Token Secret>
 ```
 
-Also note: there is a python array ```event_data``` in satori_tableau_manager.py with some additional config settings. You should review this array for more information.
+Also note: there is a python array ```event_data``` in satori_tableau_manager.py with some additional config settings:
+
+```
+event_data = {
+		"tableau_base_url": "prod-useast-a.online.tableau.com",
+		"tableau_api_version": "3.14",
+		"verify_ssl": False,
+		"tableau_page_size": "1000",
+		"satori_api_hostname": "app.satoricyber.com",
+		#for governance reporting, you can hand in an array of search fragments, e.g. 'satoricyber.net'
+		"dac_search": ["satoricyber.net", "us-east1.someotherhost.com", "thirdhost.somewhere.com"]
+	}
+```
+
+You need to review this array and update these settings specific to your Tableau environment.
+
+```dac_search``` is for the reporting commands below, you can enter in multiple search fragments.
 
 
 **Example commands**

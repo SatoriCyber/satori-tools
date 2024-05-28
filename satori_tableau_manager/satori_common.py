@@ -31,6 +31,8 @@ def satori_build_header(satori_token):
 
 def get_all_users(headers, event_data):
 
+	#will only retrieve 5000 Satori users
+
 	url =  "https://{}/api/v1/users?accountId={}&pageSize=5000".format(
 		event_data['satori_api_hostname'], 
 		event_data['satori_account_id'])
@@ -45,14 +47,13 @@ def get_all_users(headers, event_data):
 	else:
 		return response.json()['records']
 
-def get_one_user(headers, satori_account_id, apihost, email, event_data):
+def get_one_user(headers, event_data):
 
-
-	email = email.replace('+','%2B')
-
+	email = event_data['content_owner'].replace('+','%2B') 
+	
 	url =  "https://{}/api/v1/users/profile?accountId={}&email={}".format(
-		apihost, 
-		satori_account_id,
+		event_data['satori_api_hostname'], 
+		event_data['satori_account_id'],
 		email)
 	print("\n\ngetting satori user: " + url)
 
@@ -69,6 +70,8 @@ def get_one_user(headers, satori_account_id, apihost, email, event_data):
 
 def get_all_datastores(headers, event_data):
 
+	#will only return 5000 Satori Datastores
+
 	url =  "https://{}/api/v1/datastore?accountId={}&pageSize=5000".format(
 		event_data['satori_api_hostname'], 
 		event_data['satori_account_id'])
@@ -83,13 +86,15 @@ def get_all_datastores(headers, event_data):
 		return response.json()['records']
 
 
-def get_one_datastore(headers, apihost, datastore_id):
+def get_one_datastore(headers, event_data):
 
-	url =  "https://{}/api/v1/datastore/{}".format(apihost, datastore_id)
-	print("\n\ngetting one satori datastore: " + url)
+	datastore_url =  "https://{}/api/v1/datastore/{}".format(
+		event_data['satori_api_hostname'], 
+		event_data['datastore_id'])
+	print("\n\ngetting one satori datastore: " + datastore_url)
 
 	try:
-		response = requests.get(url, headers=headers, verify=False)
+		response = requests.get(datastore_url, headers=headers, verify=False)
 		response.raise_for_status()
 	except requests.exceptions.RequestException as err:
 		print("EXCEPTION: ", type(err))
@@ -97,12 +102,16 @@ def get_one_datastore(headers, apihost, datastore_id):
 		return response.json()
 
 
-def generate_satori_pat(headers, apihost, user_id, satori_pat_name, event_data):
+def generate_satori_pat(headers, event_data):
 
-	url = "https://{}/api/users/{}/personal-access-tokens".format(apihost, user_id)
+	#New Satori API as of Spring 2024: create a PAT for a Satori User (by ID)
+
+	url = "https://{}/api/users/{}/personal-access-tokens".format(
+		event_data['satori_api_hostname'], 
+		event_data['satori_user_id'])
 
 	payload = json.dumps({
-		"tokenName": satori_pat_name,
+		"tokenName": event_data['satori_newpatname'],
 		"expirationPeriod": 180
 			})
 
