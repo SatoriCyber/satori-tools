@@ -1,0 +1,77 @@
+J30.0 Vasomotor rhinitis
+J30.1 Allergic rhinitis due to pollen
+J30.2 Other seasonal allergic rhinitis
+J30.5 Allergic rhinitis due to food
+J30.81 Allergic rhinitis due to animal (cat) (dog) hair and dander
+J30.89 Other allergic rhinitis
+J30.9 Allergic rhinitis  unspecified
+J45.20 Mild intermittent asthma  uncomplicated
+J45.21 Mild intermittent asthma with (acute) exacerbation
+J45.22 Mild intermittent asthma with status asthmaticus
+J45.30 Mild persistent asthma  uncomplicated
+J45.31 Mild persistent asthma with (acute) exacerbation
+J45.32 Mild persistent asthma with status asthmaticus
+J45.40 Moderate persistent asthma  uncomplicated
+J45.41 Moderate persistent asthma with (acute) exacerbation
+J45.42 Moderate persistent asthma with status asthmaticus
+J45.50 Severe persistent asthma  uncomplicated
+J45.51 Severe persistent asthma with (acute) exacerbation
+J45.52 Severe persistent asthma with status asthmaticus
+J45.901 Unspecified asthma with (acute) exacerbation
+J45.902 Unspecified asthma with status asthmaticus
+J45.909 Unspecified asthma  uncomplicated
+J45.991 Cough variant asthma
+J45.998 Other asthma
+L20.0 Besnier's prurigo
+L20.81 Atopic neurodermatitis
+L20.82 Flexural eczema
+L20.84 Intrinsic (allergic) eczema
+L20.89 Other atopic dermatitis
+L50.0 Allergic urticaria
+L50.6 Contact urticaria
+L50.8 Other urticaria
+L50.9 Urticaria  unspecified
+R06.2 Wheezing
+T36.0X5A Adverse effect of penicillins  initial encounter
+T36.0X5D Adverse effect of penicillins  subsequent encounter
+T36.0X5S Adverse effect of penicillins  sequela
+T36.1X5S Adverse effect of cephalosporins and other beta-lactam antibiotics  sequela
+T36.2X5A Adverse effect of chloramphenicol group  initial encounter
+T36.2X5D Adverse effect of chloramphenicol group  subsequent encounter
+T36.2X5S Adverse effect of chloramphenicol group  sequela
+T36.3X5A Adverse effect of macrolides  initial encounte
+T36.3X5D Adverse effect of macrolides  subsequent encounter
+T36.3X5S Adverse effect of macrolides  sequela
+T36.4X5A Adverse effect of tetracyclines  initial encounter
+T36.4X5D Adverse effect of tetracyclines  subsequent encounter
+T36.4X5S Adverse effect of tetracyclines  sequela
+T36.5X5A Adverse effect of aminoglycosides  initial encounter
+T36.5X5D Adverse effect of aminoglycosides  subsequent encounter
+T36.5X5S Adverse effect of aminoglycosides  sequela
+T36.6X5A Adverse effect of rifampicins  initial encounter
+T36.6X5D Adverse effect of rifampicins  subsequent encounter
+T36.6X5S Adverse effect of rifampicins  sequela
+T36.7X5A Adverse effect of antifungal antibiotics  systemically used  initial encounter
+T36.7X5D Adverse effect of antifungal antibiotics  systemically used  subsequent encounter
+T36.7X5S Adverse effect of antifungal antibiotics  systemically used  sequela
+T36.8X5A Adverse effect of other systemic antibiotics  initial encounter
+T36.8X5D Adverse effect of other systemic antibiotics  subsequent encounter
+T36.8X5S Adverse effect of other systemic antibiotics  sequela
+T36.95XA Adverse effect of unspecified systemic antibiotic  initial encounter
+T36.95XD Adverse effect of unspecified systemic antibiotic  subsequent encounter
+T36.95XS Adverse effect of unspecified systemic antibiotic  sequela
+T37.0X5A Adverse effect of sulfonamides  initial encounter
+T37.0X5D Adverse effect of sulfonamides  subsequent encounter
+T37.0X5S Adverse effect of sulfonamides  sequela
+T37.1X5A Adverse effect of antimycobacterial drugs  initial encounter
+T37.1X5D Adverse effect of antimycobacterial drugs  subsequent encounter
+T37.1X5S Adverse effect of anthelminthics  sequela
+T37.2X5A Adverse effect of antimalarials and drugs acting on other blood protozoa  initial encounter
+T37.2X5D Adverse effect of antimalarials and drugs acting on other blood protozoa  subsequent encounter
+T37.2X5S Adverse effect of antimalarials and drugs acting on other blood protozoa  sequela
+T37.3X5A Adverse effect of other antiprotozoal drugs  initial encounter
+T37.3X5D Adverse effect of other antiprotozoal drugs  subsequent encounter
+T37.3X5S Adverse effect of other antiprotozoal drugs  sequela
+T37.4X5A Adverse effect of anthelminthics  initial encounter
+T37.4X5D Adverse effect of anthelminthics  subsequent encounter
+T37.4X5S Adverse effect of anthelminthics  sequela
