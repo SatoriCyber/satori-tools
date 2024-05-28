@@ -2,6 +2,17 @@ satori_tableau_manager/*.csv
 satori_tableau_manager/__pycache__/
 satori_tableau_manager/.DS_Store
 
+satori_api_server/routes/__pycache__/
+satori_api_server/satori/__pycache__/
+
+sample_data_generator/__pycache__/
+sample_data_generator/people.csv
+sample_data_generator/people.json
+sample_data_generator/social.csv
+sample_data_generator/transactions.csv
+sample_data_generator/transactions.json
+
+
 .terraform
 src/client_test.py
 src/__pycache__/
